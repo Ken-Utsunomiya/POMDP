@@ -12,4 +12,12 @@ class Grid {
     update_belief_states() {
 
     }
+
+    output_belief_states() {
+
+    }
+
+    is_terminal(coord) {
+
+    }
 }
