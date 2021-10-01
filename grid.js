@@ -1,10 +1,10 @@
 
-const directions = {
-    UP: "up",
-    DOWN: "down",
-    LEFT: "left",
-    RIGHT: "right"
-}
+// const directions = {
+//     UP: "up",
+//     DOWN: "down",
+//     LEFT: "left",
+//     RIGHT: "right"
+// }
 
 class Grid {
     #belief_states
