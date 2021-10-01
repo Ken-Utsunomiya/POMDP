@@ -1,3 +1,4 @@
+const {Grid, directions} = require("./grid");
 
 const start = (actions, evidence, belief_states) => {
     const grid = new Grid(belief_states)

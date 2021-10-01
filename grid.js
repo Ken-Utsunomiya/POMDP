@@ -18,7 +18,14 @@ class Grid {
     }
 
     update_belief_states(a, e) {
-
+        let new_bs = [
+            [0,0,0,0],
+            [0,null,0,0],
+            [0,0,0,0]
+        ]
+        console.log(new_bs)
+        console.log(a)
+        console.log(e)
     }
 
     output_belief_states() {
