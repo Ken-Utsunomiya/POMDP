@@ -1,23 +1,35 @@
+
+const directions = {
+    UP: "up",
+    DOWN: "down",
+    LEFT: "left",
+    RIGHT: "right"
+}
+
 class Grid {
-    #_belief_states
+    #belief_states
 
-    constructor() {
-
+    constructor(bs) {
+        this.#belief_states = bs
     }
 
     get belief_states() {
-        return this.#_belief_states
+        return this.#belief_states
     }
 
-    update_belief_states() {
+    update_belief_states(a, e) {
 
     }
 
     output_belief_states() {
-
+        console.log(this.belief_states)
     }
 
     is_terminal(coord) {
+
+    }
+
+    is_third_col(coord) {
 
     }
 }

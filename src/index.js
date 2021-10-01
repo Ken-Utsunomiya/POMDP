@@ -1,6 +1,13 @@
 
 const start = (actions, evidence, belief_states) => {
+    const grid = new Grid(belief_states)
+    const n = actions.length
 
+    for (let i = 0; i < n; i++) {
+        grid.update_belief_states(actions[i], evidence[i])
+    }
+
+    grid.output_belief_states()
 }
 
 
