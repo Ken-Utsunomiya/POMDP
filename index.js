@@ -6,6 +6,7 @@ const directions = {
     RIGHT: "right"
 }
 
+// Grid class to represent the world with belief states
 class Grid {
     #belief_states
     #start_row
@@ -21,6 +22,9 @@ class Grid {
         this.#end_col = 4
     }
 
+    // Update the belief states in the grid with the given action and observation,
+    // considering all possible directions for one action
+    // i.e. a = UP ==> possible directions: UP (p = 0.8), RIGHT (p = 0.1), LEFT (p = 0.1)
     update_belief_states(a, e) {
         let new_bs = [
             [null, null, null, null, null, null],
@@ -37,21 +41,25 @@ class Grid {
 
                 if (new_bs[y][x] != null) {
                     switch (a) {
+                        // UP (p = 0.8), RIGHT (p = 0.1), LEFT (p = 0.1)
                         case directions.UP:
                             this.#update_belief_state(new_bs, directions.UP, pos, 0.8, e)
                             this.#update_belief_state(new_bs, directions.RIGHT, pos, 0.1, e)
                             this.#update_belief_state(new_bs, directions.LEFT, pos, 0.1, e)
                             break
+                        // DOWN (p = 0.8), RIGHT (p = 0.1), LEFT (p = 0.1)
                         case directions.DOWN:
                             this.#update_belief_state(new_bs, directions.DOWN, pos, 0.8, e)
                             this.#update_belief_state(new_bs, directions.RIGHT, pos, 0.1, e)
                             this.#update_belief_state(new_bs, directions.LEFT, pos, 0.1, e)
                             break
+                        // RIGHT (p = 0.8), UP (p = 0.1), DOWN (p = 0.1)
                         case directions.RIGHT:
                             this.#update_belief_state(new_bs, directions.RIGHT, pos, 0.8, e)
                             this.#update_belief_state(new_bs, directions.UP, pos, 0.1, e)
                             this.#update_belief_state(new_bs, directions.DOWN, pos, 0.1, e)
                             break
+                        // LEFT (p = 0.8), UP (p = 0.1), DOWN (p = 0.1)
                         case directions.LEFT:
                             this.#update_belief_state(new_bs, directions.LEFT, pos, 0.8, e)
                             this.#update_belief_state(new_bs, directions.UP, pos, 0.1, e)
@@ -65,7 +73,9 @@ class Grid {
         this.#belief_states = new_bs
     }
 
+    // Calculates a new belief state for one cell with the given action direction
     #update_belief_state(bs, dir, pos, tp, e) {
+        // if the agent is at the terminal states, do nothing
         if (!Grid.#is_terminal(pos)) {
             let new_pos
             switch (dir) {
@@ -83,6 +93,7 @@ class Grid {
                     break
             }
 
+            // determine op = Operational probability depending on the given evidence
             let op = 0
             if (Grid.#is_terminal(new_pos)) {
                 op = e === "end" ? 1 : 0
@@ -104,6 +115,7 @@ class Grid {
         }
     }
 
+    // Multiply the normalization constant to each belief state
     #normalize(bs) {
         let sum = 0
         for (let y = this.#start_row; y <= this.#end_row; y++) {
@@ -119,6 +131,7 @@ class Grid {
         }
     }
 
+    // Fix the fraction parts of belief states to round them to 5 decimal digits
     #fix_fraction_part(bs) {
         for (let y = this.#start_row; y <= this.#end_row; y++) {
             for (let x = this.#start_col; x <= this.#end_col; x++) {
@@ -136,16 +149,18 @@ class Grid {
         }
     }
 
+    // Return true if the position is a terminal state; otherwise, false
     static #is_terminal(pos) {
         return (pos.x === 4) && (pos.y === 1 || pos.y === 2)
     }
 
+    // Return true if the position is in the third column; otherwise, false
     static #is_third_col(pos) {
         return pos.x === 3
     }
 }
 
-// Run the program
+// Run the program with given sequence of actions, observations and initial belief states
 // -------------------------------------------------------
 
 const start = (actions, evidence, belief_states) => {
@@ -212,7 +227,7 @@ console.log("Sequence #4")
 
 // (up, right, right, right) (2,2,1,1) with S0= (1,1)
 start(
-    [directions.UP, directions.UP, directions.RIGHT, directions.RIGHT],
+    [directions.UP, directions.RIGHT, directions.RIGHT, directions.RIGHT],
     [2, 2, 1, 1],
     [
         [null, null, null, null, null, null],
