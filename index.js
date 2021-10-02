@@ -21,10 +21,6 @@ class Grid {
         this.#end_col = 4
     }
 
-    get belief_states() {
-        return this.#belief_states
-    }
-
     update_belief_states(a, e) {
         let new_bs = [
             [null, null, null, null, null, null],
@@ -35,7 +31,6 @@ class Grid {
         ]
 
         let pos
-        let sum = 0
         for (let y = this.#start_row; y <= this.#end_row; y++) {
             for (let x = this.#start_col; x <= this.#end_col; x++) {
                 pos = { x, y }
@@ -66,7 +61,7 @@ class Grid {
                 }
             }
         }
-
+        this.#normalize(new_bs)
         this.#belief_states = new_bs
     }
 
@@ -105,21 +100,37 @@ class Grid {
                 }
             }
 
-            let val = op * tp * this.#belief_states[pos.y][pos.x]
-            bs[new_pos.y][new_pos.x] += Math.floor( val * Math.pow( 10, 5 ) ) / Math.pow( 10, 5 )
+            bs[new_pos.y][new_pos.x] += op * tp * this.#belief_states[pos.y][pos.x]
+        }
+    }
 
-            if (new_pos.y === 1 && new_pos.x === 1) {
-                // console.log("x: " + pos.x)
-                // console.log("y: " + pos.y)
-                // console.log(tp)
-                // console.log("s: " + this.#belief_states[pos.y][pos.x])
-                // console.log(bs[new_pos.y][new_pos.x])
-                // console.log("-----------------------")
+    #normalize(bs) {
+        let sum = 0
+        for (let y = this.#start_row; y <= this.#end_row; y++) {
+            sum += bs[y].reduce((a, b) => a + b, 0)
+        }
+
+        for (let y = this.#start_row; y <= this.#end_row; y++) {
+            for (let x = this.#start_col; x <= this.#end_col; x++) {
+                if (bs[y][x] != null) {
+                    bs[y][x] /= sum
+                }
+            }
+        }
+    }
+
+    #fix_fraction_part(bs) {
+        for (let y = this.#start_row; y <= this.#end_row; y++) {
+            for (let x = this.#start_col; x <= this.#end_col; x++) {
+                if (bs[y][x] != null) {
+                    bs[y][x] = Math.floor( bs[y][x] * Math.pow( 10, 5 ) ) / Math.pow( 10, 5 )
+                }
             }
         }
     }
 
     output_belief_states() {
+        this.#fix_fraction_part(this.#belief_states)
         for (let y = this.#start_row; y <= this.#end_row; y++) {
             console.log(`| ${this.#belief_states[y][1]} | ${this.#belief_states[y][2]} | ${this.#belief_states[y][3]} | ${this.#belief_states[y][4]} |`)
         }
@@ -143,26 +154,12 @@ const start = (actions, evidence, belief_states) => {
 
     for (let i = 0; i < n; i++) {
         grid.update_belief_states(actions[i], evidence[i])
-        // grid.output_belief_states()
-        // console.log("---------------------------")
     }
 
-    // grid.update_belief_states(actions[0], evidence[0])
     console.log("final")
     grid.output_belief_states()
 }
 
-// start(
-//     [directions.LEFT,directions.LEFT,directions.LEFT,directions.LEFT,directions.LEFT],
-//     [2],
-//     [
-//         [null, null, null, null, null, null],
-//         [null, 0.111, 0.111, 0.111, 0.000, null],
-//         [null, 0.111, null, 0.111, 0.000, null],
-//         [null, 0.111, 0.111, 0.111, 0.111, null],
-//         [null, null, null, null, null, null]
-//     ]
-// )
 
 // (up, up , up) (2,2,2)
 console.log("Sequence #1")
@@ -199,7 +196,7 @@ console.log("Sequence #3")
 
 // (right, right, up) (1,1,end) with S0= (3,2)
 start(
-    [directions.RIGHT, directions.UP, directions.UP],
+    [directions.RIGHT, directions.RIGHT, directions.UP],
     [1, 1, "end"],
     [
         [null, null, null, null, null, null],
