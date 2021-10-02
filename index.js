@@ -35,6 +35,7 @@ class Grid {
         ]
 
         let pos
+        let sum = 0
         for (let y = this.#start_row; y <= this.#end_row; y++) {
             for (let x = this.#start_col; x <= this.#end_col; x++) {
                 pos = { x, y }
@@ -70,34 +71,66 @@ class Grid {
     }
 
     #update_belief_state(bs, dir, pos, tp, e) {
-        let new_pos
-        switch (dir) {
-            case directions.UP:
-                new_pos = bs[pos.y - 1][pos.x] ? { x: pos.x, y: pos.y - 1 } : { x: pos.x, y: pos.y }
-                break
-            case directions.DOWN:
-                new_pos = bs[pos.y + 1][pos.x] ? { x: pos.x, y: pos.y + 1 } : { x: pos.x, y: pos.y }
-                break
-            case directions.RIGHT:
-                new_pos = bs[pos.y][pos.x + 1] ? { x: pos.x + 1, y: pos.y } : { x: pos.x, y: pos.y }
-                break
-            case directions.LEFT:
-                new_pos = bs[pos.y][pos.x - 1] ? { x: pos.x - 1, y: pos.y } : { x: pos.x, y: pos.y }
-                break
+        if (!Grid.#is_terminal(pos)) {
+            let new_pos
+            switch (dir) {
+                case directions.UP:
+                    new_pos = bs[pos.y - 1][pos.x] != null ? { x: pos.x, y: pos.y - 1 } : { x: pos.x, y: pos.y }
+                    break
+                case directions.DOWN:
+                    new_pos = bs[pos.y + 1][pos.x] != null ? { x: pos.x, y: pos.y + 1 } : { x: pos.x, y: pos.y }
+                    break
+                case directions.RIGHT:
+                    new_pos = bs[pos.y][pos.x + 1] != null ? { x: pos.x + 1, y: pos.y } : { x: pos.x, y: pos.y }
+                    break
+                case directions.LEFT:
+                    new_pos = bs[pos.y][pos.x - 1] != null ? { x: pos.x - 1, y: pos.y } : { x: pos.x, y: pos.y }
+                    break
+            }
+
+            let op = 0
+            if (Grid.#is_terminal(new_pos)) {
+                op = e === "end" ? 1 : 0
+            } else if(Grid.#is_third_col(new_pos)) {
+                switch (e) {
+                    case 1: op = 0.9; break
+                    case 2: op = 0.1; break
+                    case "end": op = 0; break
+                }
+            } else {
+                switch (e) {
+                    case 1: op = 0.1; break
+                    case 2: op = 0.9; break
+                    case "end": op = 0; break
+                }
+            }
+
+            let val = op * tp * this.#belief_states[pos.y][pos.x]
+            bs[new_pos.y][new_pos.x] += Math.floor( val * Math.pow( 10, 5 ) ) / Math.pow( 10, 5 )
+
+            if (new_pos.y === 1 && new_pos.x === 1) {
+                // console.log("x: " + pos.x)
+                // console.log("y: " + pos.y)
+                // console.log(tp)
+                // console.log("s: " + this.#belief_states[pos.y][pos.x])
+                // console.log(bs[new_pos.y][new_pos.x])
+                // console.log("-----------------------")
+            }
         }
-        bs[new_pos.y][new_pos.x] += tp * this.#belief_states[pos.y][pos.x]
     }
 
     output_belief_states() {
-        console.log(this.belief_states)
+        for (let y = this.#start_row; y <= this.#end_row; y++) {
+            console.log(`| ${this.#belief_states[y][1]} | ${this.#belief_states[y][2]} | ${this.#belief_states[y][3]} | ${this.#belief_states[y][4]} |`)
+        }
     }
 
-    #is_terminal(pos) {
-
+    static #is_terminal(pos) {
+        return (pos.x === 4) && (pos.y === 1 || pos.y === 2)
     }
 
-    #is_third_col(pos) {
-
+    static #is_third_col(pos) {
+        return pos.x === 3
     }
 }
 
@@ -110,13 +143,29 @@ const start = (actions, evidence, belief_states) => {
 
     for (let i = 0; i < n; i++) {
         grid.update_belief_states(actions[i], evidence[i])
+        // grid.output_belief_states()
+        // console.log("---------------------------")
     }
 
+    // grid.update_belief_states(actions[0], evidence[0])
+    console.log("final")
     grid.output_belief_states()
 }
 
+// start(
+//     [directions.LEFT,directions.LEFT,directions.LEFT,directions.LEFT,directions.LEFT],
+//     [2],
+//     [
+//         [null, null, null, null, null, null],
+//         [null, 0.111, 0.111, 0.111, 0.000, null],
+//         [null, 0.111, null, 0.111, 0.000, null],
+//         [null, 0.111, 0.111, 0.111, 0.111, null],
+//         [null, null, null, null, null, null]
+//     ]
+// )
 
 // (up, up , up) (2,2,2)
+console.log("Sequence #1")
 start(
     [directions.UP, directions.UP, directions.UP],
     [2, 2, 2],
@@ -128,6 +177,9 @@ start(
         [null, null, null, null, null, null]
     ]
 )
+
+console.log()
+console.log("Sequence #2")
 
 // (up, up, up) (1,1,1)
 start(
@@ -142,6 +194,9 @@ start(
     ]
 )
 
+console.log()
+console.log("Sequence #3")
+
 // (right, right, up) (1,1,end) with S0= (3,2)
 start(
     [directions.RIGHT, directions.UP, directions.UP],
@@ -154,6 +209,9 @@ start(
         [null, null, null, null, null, null]
     ]
 )
+
+console.log()
+console.log("Sequence #4")
 
 // (up, right, right, right) (2,2,1,1) with S0= (1,1)
 start(
